@@ -22,7 +22,7 @@ std::vector<int> BoyerMoore::search(const std::string& text, const std::string& 
 
     std::vector<int> bad_char = bad_character_table(pattern);
 
-    int s = 0; // shift of the pattern
+    int s = 0;
     while (s <= n - m) {
         int j = m - 1;
 

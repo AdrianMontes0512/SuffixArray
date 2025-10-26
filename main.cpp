@@ -6,7 +6,7 @@ std::string generate_random_text(size_t n) {
     std::string text;
     text.reserve(n);
     for (size_t i = 0; i < n; ++i) {
-        text += 'a' + (rand() % 4); // DNA: a, b, c, d
+        text += 'a' + (rand() % 4);
     }
     return text;
 }

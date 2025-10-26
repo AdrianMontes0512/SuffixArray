@@ -15,7 +15,9 @@
 struct BenchmarkResult {
     std::string algorithm;
     size_t input_size;
-    double time_ms;
+    double construction_time_ms;
+    double search_time_ms;
+    double total_time_ms;
     size_t memory_bytes;
 };
 

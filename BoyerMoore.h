@@ -13,8 +13,6 @@
 class BoyerMoore {
 public:
     static std::vector<int> search(const std::string& text, const std::string& pattern);
-
-private:
     static std::vector<int> bad_character_table(const std::string& pattern);
 };
 
