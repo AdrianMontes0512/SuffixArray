@@ -75,6 +75,7 @@ std::vector<BenchmarkResult> Benchmark::compare_all(const std::string& text, con
     return results;
 }
 
+// test
 void Benchmark::print_results(const std::vector<BenchmarkResult>& results) {
     std::cout << std::setw(15) << "Algorithm"
               << std::setw(15) << "Input Size"
