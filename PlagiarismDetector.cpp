@@ -75,10 +75,10 @@ PlagiarismDetector::Report PlagiarismDetector::analyze() {
 
     // Marcar caracteres cubiertos en ambos textos
     for (int k = 0; k < lcp_val; ++k) {
-        if (pos1 + k < static_cast<int>(covered1.size())) 
-            covered1[pos1 + k] = true;
-        if (adjusted_pos2 + k < static_cast<int>(covered2.size())) 
-            covered2[adjusted_pos2 + k] = true;
+      if (pos1 + k < static_cast<int>(covered1.size()))
+        covered1[pos1 + k] = true;
+      if (adjusted_pos2 + k < static_cast<int>(covered2.size()))
+        covered2[adjusted_pos2 + k] = true;
     }
 
     // Crear el registro de coincidencia
@@ -89,33 +89,78 @@ PlagiarismDetector::Report PlagiarismDetector::analyze() {
     match.text = extract_substring(pos1, lcp_val);
 
     report.matches.push_back(match);
-    // report.total_matched_chars se calculará al final basado en cobertura
     report.longest_match = std::max(report.longest_match, lcp_val);
   }
+
+  // Eliminamos coincidencias que están contenidas dentro de otras más grandes
+  // Ejemplo: Si tenemos "Hola mundo", eliminamos "ola mundo", "la mundo"
+
+  // 1. Ordenar por longitud descendente (priorizar las más largas)
+  std::sort(report.matches.begin(), report.matches.end(),
+            [](const Match &a, const Match &b) { return a.length > b.length; });
+
+  std::vector<Match> filtered_matches;
+  filtered_matches.reserve(report.matches.size());
+
+  for (const auto &candidate : report.matches) {
+    bool is_redundant = false;
+
+    // Verificar si esta coincidencia está contenida en alguna ya aceptada
+    for (const auto &existing : filtered_matches) {
+      // Verificamos contención en text1
+      bool contained_in_t1 = (candidate.pos1 >= existing.pos1) &&
+                             (candidate.pos1 + candidate.length <=
+                              existing.pos1 + existing.length);
+
+      // Verificamos contención en text2
+      bool contained_in_t2 = (candidate.pos2 >= existing.pos2) &&
+                             (candidate.pos2 + candidate.length <=
+                              existing.pos2 + existing.length);
+
+      // Verificamos que sea la "misma" coincidencia (mismo desplazamiento
+      // relativo)
+      bool same_relative_offset =
+          (candidate.pos1 - existing.pos1) == (candidate.pos2 - existing.pos2);
+
+      if (contained_in_t1 && contained_in_t2 && same_relative_offset) {
+        is_redundant = true;
+        break;
+      }
+    }
+
+    if (!is_redundant) {
+      filtered_matches.push_back(candidate);
+    }
+  }
+
+  // Reemplazamos la lista original con la filtrada
+  report.matches = filtered_matches;
 
   // Calcular total de caracteres únicos cubiertos
   // Usamos el conteo del texto más corto para el porcentaje
   int covered_count1 = std::count(covered1.begin(), covered1.end(), true);
   int covered_count2 = std::count(covered2.begin(), covered2.end(), true);
-  
+
   int min_length = std::min(static_cast<int>(text1_.size()),
                             static_cast<int>(text2_.size()));
-                            
+
   // Usamos la cobertura del texto más corto para el cálculo del porcentaje
-  // Esto representa "qué porcentaje del texto más corto está presente en el otro"
+  // Esto representa "qué porcentaje del texto más corto está presente en el
+  // otro"
   if (text1_.size() <= text2_.size()) {
-      report.total_matched_chars = covered_count1;
+    report.total_matched_chars = covered_count1;
   } else {
-      report.total_matched_chars = covered_count2;
+    report.total_matched_chars = covered_count2;
   }
 
   if (min_length > 0) {
     report.similarity_percentage =
         (100.0 * report.total_matched_chars) / min_length;
-    
-    // Asegurar que no exceda 100% (aunque con la lógica de cobertura no debería)
-    if (report.similarity_percentage > 100.0) 
-        report.similarity_percentage = 100.0;
+
+    // Asegurar que no exceda 100% (aunque con la lógica de cobertura no
+    // debería)
+    if (report.similarity_percentage > 100.0)
+      report.similarity_percentage = 100.0;
   }
 
   return report;
