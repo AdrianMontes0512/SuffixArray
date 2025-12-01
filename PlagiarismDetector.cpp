@@ -40,6 +40,10 @@ PlagiarismDetector::Report PlagiarismDetector::analyze() {
   // Set para evitar contar el mismo fragmento múltiples veces
   std::set<std::pair<int, int>> seen_matches;
 
+  // Vectores para rastrear caracteres cubiertos y evitar conteo doble (overlap)
+  std::vector<bool> covered1(text1_.size(), false);
+  std::vector<bool> covered2(text2_.size(), false);
+
   // Recorremos el LCP array buscando coincidencias
   for (int i = 1; i < static_cast<int>(lcp.size()); ++i) {
     int lcp_val = lcp[i];
@@ -63,11 +67,19 @@ PlagiarismDetector::Report PlagiarismDetector::analyze() {
     // Ajustar pos2 para que sea relativo al inicio del segundo texto
     int adjusted_pos2 = pos2 - separator_pos_ - 1;
 
-    // Evitar duplicados
+    // Evitar duplicados exactos de pares de posiciones
     auto match_key = std::make_pair(pos1, adjusted_pos2);
     if (seen_matches.count(match_key))
       continue;
     seen_matches.insert(match_key);
+
+    // Marcar caracteres cubiertos en ambos textos
+    for (int k = 0; k < lcp_val; ++k) {
+        if (pos1 + k < static_cast<int>(covered1.size())) 
+            covered1[pos1 + k] = true;
+        if (adjusted_pos2 + k < static_cast<int>(covered2.size())) 
+            covered2[adjusted_pos2 + k] = true;
+    }
 
     // Crear el registro de coincidencia
     Match match;
@@ -77,17 +89,33 @@ PlagiarismDetector::Report PlagiarismDetector::analyze() {
     match.text = extract_substring(pos1, lcp_val);
 
     report.matches.push_back(match);
-    report.total_matched_chars += lcp_val;
+    // report.total_matched_chars se calculará al final basado en cobertura
     report.longest_match = std::max(report.longest_match, lcp_val);
   }
 
-  // Calcular porcentaje de similitud
-  // Usamos el texto más corto como base para evitar valores > 100%
+  // Calcular total de caracteres únicos cubiertos
+  // Usamos el conteo del texto más corto para el porcentaje
+  int covered_count1 = std::count(covered1.begin(), covered1.end(), true);
+  int covered_count2 = std::count(covered2.begin(), covered2.end(), true);
+  
   int min_length = std::min(static_cast<int>(text1_.size()),
                             static_cast<int>(text2_.size()));
+                            
+  // Usamos la cobertura del texto más corto para el cálculo del porcentaje
+  // Esto representa "qué porcentaje del texto más corto está presente en el otro"
+  if (text1_.size() <= text2_.size()) {
+      report.total_matched_chars = covered_count1;
+  } else {
+      report.total_matched_chars = covered_count2;
+  }
+
   if (min_length > 0) {
     report.similarity_percentage =
         (100.0 * report.total_matched_chars) / min_length;
+    
+    // Asegurar que no exceda 100% (aunque con la lógica de cobertura no debería)
+    if (report.similarity_percentage > 100.0) 
+        report.similarity_percentage = 100.0;
   }
 
   return report;
