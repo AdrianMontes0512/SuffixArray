@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 4.0)
-project(untitled)
+project(SuffixArray)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(untitled main.cpp
+# Ejecutable principal de benchmarks
+add_executable(benchmark_main main.cpp
         SuffixArray.cpp
         SuffixArray.h
         SuffixTree.cpp
@@ -14,3 +15,10 @@ add_executable(untitled main.cpp
         BoyerMoore.h
         Benchmark.cpp
         Benchmark.h)
+
+# Ejecutable para demostracion de deteccion de plagio
+add_executable(demo_plagiarism demo_plagiarism.cpp
+        PlagiarismDetector.cpp
+        PlagiarismDetector.h
+        SuffixArray.cpp
+        SuffixArray.h)
