@@ -67,9 +67,10 @@ cmake ..
 make
 ```
 
-Esto generará dos ejecutables:
+Esto generará los siguientes ejecutables:
 - `benchmark_main` - Programa de benchmarking
 - `demo_plagiarism` - Demostración del detector de plagio
+- `demo_tui` - **NUEVO**: Demo con interfaz interactiva en terminal
 
 ### Compilar Directamente con g++
 
@@ -79,8 +80,11 @@ Si no tienes CMake instalado:
 # Compilar el programa de benchmarks
 g++ -std=c++20 -o benchmark_main main.cpp SuffixArray.cpp Benchmark.cpp KMP.cpp BoyerMoore.cpp
 
-# Compilar la demo de plagio
+# Compilar la demo de plagio original
 g++ -std=c++20 -o demo_plagiarism demo_plagiarism.cpp PlagiarismDetector.cpp SuffixArray.cpp
+
+# Compilar la demo interactiva TUI
+g++ -std=c++20 -o demo_tui demo_tui.cpp InteractiveMenu.cpp PlagiarismDetector.cpp SuffixArray.cpp
 ```
 
 ## Ejecución
@@ -96,6 +100,19 @@ Este programa muestra:
 - Fragmentos comunes encontrados entre textos
 - Porcentaje de similitud calculado
 - Modo interactivo para probar con textos propios
+
+### Demo Interactivo TUI (NUEVO - RECOMENDADO)
+
+```bash
+./build/demo_tui
+```
+
+Interfaz interactiva en terminal con menús navegables:
+- 🖥️ Menú principal intuitivo
+- ⌨️ Entrada de texto directa
+- 📂 Selección de casos de prueba predefinidos
+- 📊 Visualización de resultados en tiempo real
+- 🔄 Navegación fluida sin reiniciar el programa
 
 ### Programa de Benchmarking
 

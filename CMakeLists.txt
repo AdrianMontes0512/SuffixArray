@@ -22,3 +22,12 @@ add_executable(demo_plagiarism demo_plagiarism.cpp
         PlagiarismDetector.h
         SuffixArray.cpp
         SuffixArray.h)
+
+# Demo Interactivo TUI (Terminal User Interface)
+add_executable(demo_tui demo_tui.cpp
+        InteractiveMenu.cpp
+        InteractiveMenu.h
+        PlagiarismDetector.cpp
+        PlagiarismDetector.h
+        SuffixArray.cpp
+        SuffixArray.h)
